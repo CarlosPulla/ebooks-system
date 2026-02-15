@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	lib := NewLibrary()
+	// Ahora la UI trabaja con una INTERFAZ (Unidad 3).
+	var lib LibraryManager = NewLibrary()
 	seedDemoData(lib)
 
 	reader := bufio.NewReader(os.Stdin)
@@ -52,10 +53,10 @@ func main() {
 		case "9":
 			returnBook(lib, reader)
 		case "0":
-			fmt.Println("Saliendo... ✅")
+			fmt.Println("Saliendo... ")
 			return
 		default:
-			fmt.Println("Opción inválida ❌")
+			fmt.Println("Opción inválida ")
 		}
 	}
 }
@@ -80,7 +81,7 @@ func readInt(r *bufio.Reader) int {
 
 // ------------------ Menú actions ------------------
 
-func listBooks(lib *Library) {
+func listBooks(lib LibraryManager) {
 	books := lib.ListBooks()
 	if len(books) == 0 {
 		fmt.Println("No hay libros registrados.")
@@ -92,7 +93,7 @@ func listBooks(lib *Library) {
 	}
 }
 
-func addBook(lib *Library, r *bufio.Reader) {
+func addBook(lib LibraryManager, r *bufio.Reader) {
 	fmt.Println("\n--- AGREGAR LIBRO ---")
 	fmt.Print("ID: ")
 	id := readLine(r)
@@ -109,21 +110,20 @@ func addBook(lib *Library, r *bufio.Reader) {
 	fmt.Print("Género: ")
 	genre := readLine(r)
 
-	err := lib.AddBook(Book{
-		ID:     id,
-		Title:  title,
-		Author: author,
-		Year:   year,
-		Genre:  genre,
-	})
+	b, err := NewBook(id, title, author, year, genre)
 	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	if err := lib.AddBook(b); err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 	fmt.Println("Libro agregado ✅")
 }
 
-func removeBook(lib *Library, r *bufio.Reader) {
+func removeBook(lib LibraryManager, r *bufio.Reader) {
 	fmt.Println("\n--- ELIMINAR LIBRO ---")
 	fmt.Print("ID del libro: ")
 	id := readLine(r)
@@ -135,7 +135,7 @@ func removeBook(lib *Library, r *bufio.Reader) {
 	fmt.Println("Libro eliminado ✅")
 }
 
-func searchBook(lib *Library, r *bufio.Reader) {
+func searchBook(lib LibraryManager, r *bufio.Reader) {
 	fmt.Println("\n--- BUSCAR LIBRO ---")
 	fmt.Print("Buscar por título: ")
 	q := readLine(r)
@@ -150,7 +150,7 @@ func searchBook(lib *Library, r *bufio.Reader) {
 	}
 }
 
-func listUsers(lib *Library) {
+func listUsers(lib LibraryManager) {
 	users := lib.ListUsers()
 	if len(users) == 0 {
 		fmt.Println("No hay usuarios registrados.")
@@ -162,7 +162,7 @@ func listUsers(lib *Library) {
 	}
 }
 
-func addUser(lib *Library, r *bufio.Reader) {
+func addUser(lib LibraryManager, r *bufio.Reader) {
 	fmt.Println("\n--- AGREGAR USUARIO ---")
 	fmt.Print("ID: ")
 	id := readLine(r)
@@ -173,19 +173,20 @@ func addUser(lib *Library, r *bufio.Reader) {
 	fmt.Print("Email: ")
 	email := readLine(r)
 
-	err := lib.AddUser(User{
-		ID:    id,
-		Name:  name,
-		Email: email,
-	})
+	u, err := NewUser(id, name, email)
 	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	if err := lib.AddUser(u); err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 	fmt.Println("Usuario agregado ✅")
 }
 
-func removeUser(lib *Library, r *bufio.Reader) {
+func removeUser(lib LibraryManager, r *bufio.Reader) {
 	fmt.Println("\n--- ELIMINAR USUARIO ---")
 	fmt.Print("ID del usuario: ")
 	id := readLine(r)
@@ -197,7 +198,7 @@ func removeUser(lib *Library, r *bufio.Reader) {
 	fmt.Println("Usuario eliminado ✅")
 }
 
-func borrowBook(lib *Library, r *bufio.Reader) {
+func borrowBook(lib LibraryManager, r *bufio.Reader) {
 	fmt.Println("\n--- PRESTAR LIBRO ---")
 	fmt.Print("ID del libro: ")
 	bookID := readLine(r)
@@ -212,7 +213,7 @@ func borrowBook(lib *Library, r *bufio.Reader) {
 	fmt.Println("Libro prestado ✅")
 }
 
-func returnBook(lib *Library, r *bufio.Reader) {
+func returnBook(lib LibraryManager, r *bufio.Reader) {
 	fmt.Println("\n--- DEVOLVER LIBRO ---")
 	fmt.Print("ID del libro: ")
 	bookID := readLine(r)
@@ -226,10 +227,14 @@ func returnBook(lib *Library, r *bufio.Reader) {
 
 // ------------------ Demo data ------------------
 
-func seedDemoData(lib *Library) {
-	_ = lib.AddUser(User{ID: "U001", Name: "Carlos", Email: "carlos@example.com"})
-	_ = lib.AddUser(User{ID: "U002", Name: "Ana", Email: "ana@example.com"})
+func seedDemoData(lib LibraryManager) {
+	u1, _ := NewUser("U001", "Carlos", "carlos@example.com")
+	u2, _ := NewUser("U002", "Ana", "ana@example.com")
+	_ = lib.AddUser(u1)
+	_ = lib.AddUser(u2)
 
-	_ = lib.AddBook(Book{ID: "B001", Title: "Clean Code", Author: "Robert C. Martin", Year: 2008, Genre: "Software"})
-	_ = lib.AddBook(Book{ID: "B002", Title: "The Go Programming Language", Author: "Alan A. A. Donovan", Year: 2015, Genre: "Programación"})
+	b1, _ := NewBook("B001", "Clean Code", "Robert C. Martin", 2008, "Software")
+	b2, _ := NewBook("B002", "The Go Programming Language", "Alan A. A. Donovan", 2015, "Programación")
+	_ = lib.AddBook(b1)
+	_ = lib.AddBook(b2)
 }
